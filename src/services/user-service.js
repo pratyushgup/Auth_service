@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const UserRepository = require('../repository/user-repository');
 
 const { JWT_KEY } = require('../config/serverConfig');
+const AppErrors = require('../utils/error-handler');
 
 class UserService{
     constructor(){
@@ -15,6 +16,9 @@ class UserService{
             const user = await this.userRepository.create(data);
             return user;
         } catch (error) {
+            if(error.name == 'SequelizeValidationError'){
+                throw error;
+            }
             console.log("Something went wrong in service layer");
             throw error;
         }
@@ -84,6 +88,15 @@ class UserService{
             return bcrypt.compareSync(userInputPlainPassword,encryptedPassword);
         } catch (error) {
             console.log("Something went wrong in creating token in service layer");
+            throw error;
+        }
+    }
+
+    isAdmin(userId){
+        try {
+            return this.userRepository.isAdmin(userId);
+        } catch (error) {
+            console.log("Something went wrong in service layer");
             throw error;
         }
     }
